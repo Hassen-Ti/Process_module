@@ -134,3 +134,41 @@ def preprocessing(df):
     buttons_layout = widgets.VBox([buttons_row1, buttons_row2])
 
     display(buttons_layout, output)
+    
+    # Mon SUPER generateur de HEATMAP *==HASSENE==*
+import ipywidgets as widgets
+from IPython.display import display
+
+def heatmap_gen_Hass(df):
+    title_widget = widgets.Text(value='Heatmap of Correlation Matrix', description='Title:')
+    columns_widget = widgets.Text(value='', description='Columns:')
+    save_widget = widgets.Checkbox(value=False, description='Save Figure')
+    filename_widget = widgets.Text(value='heatmap.png', description='Filename:')
+    
+    display(title_widget, columns_widget, save_widget, filename_widget)
+    
+    def on_button_click(b):
+        title = title_widget.value
+        columns = columns_widget.value
+        save_option = save_widget.value
+        filename = filename_widget.value if save_option else ""
+        
+        if columns:
+            columns = [col.strip() for col in columns.split(',')]
+            correlation_matrix = df[columns].corr()
+        else:
+            correlation_matrix = df.corr()
+        
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+        plt.title(title)
+        
+        if filename:
+            plt.savefig(filename)
+            print(f"Figure sauvegardée sous le nom {filename}")
+        
+        plt.show()
+    
+    button = widgets.Button(description="Generate Heatmap")
+    button.on_click(on_button_click)
+    display(button)
