@@ -136,8 +136,6 @@ def preprocessing(df):
     display(buttons_layout, output)
     
     # Mon SUPER generateur de HEATMAP *==HASSENE==*
-import ipywidgets as widgets
-from IPython.display import display
 
 def heatmap_gen_Hass(df):
     title_widget = widgets.Text(value='Heatmap of Correlation Matrix', description='Title:')
