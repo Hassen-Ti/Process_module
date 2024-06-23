@@ -11,7 +11,7 @@ with open('process_app.py', 'wb') as file:
 # importing module 
 import process_app as pa
 
-you can try with any df 
-df = pd.read_csv("path.csv")
-pa.preprocessing(df)
+you can try with any df  / 
+df = pd.read_csv("path.csv")  /
+pa.preprocessing(df)  /
 pa.visual(df)
