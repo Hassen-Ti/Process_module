@@ -2,6 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from IPython.display import display, clear_output
+import pandas as pd
 # Ma superbe application pour visualiser
 def visual(df):
   output = widgets.Output()
@@ -49,9 +50,7 @@ def visual(df):
   
   
   
-import ipywidgets as widgets
-from IPython.display import display, clear_output
-import pandas as pd
+
 # ma superbe application pour explorer le dataframe
 def preprocessing(df):
     output = widgets.Output()
