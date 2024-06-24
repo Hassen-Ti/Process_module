@@ -185,7 +185,7 @@ def url_df():
             df = pd.read_csv(url)
             globals()[df_name] = df
             print(f"votre df a été créé avec succès sous le nom de {df_name}")
-            pa.preprocessing(df)
+            preprocessing(df)
         except Exception as e:
             print(f"Erreur lors de la lecture du fichier CSV: {e}")
 
