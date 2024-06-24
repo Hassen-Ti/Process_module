@@ -171,7 +171,7 @@ def heatmap_gen_Hass(df):
     display(button)
     
     
-    def url_df():
+def url_df():
     lien_url = widgets.Text(value="Insérez l'URL", description="URL")
     mon_df = widgets.Text(value="Insérez le nom de votre DF", description="Nom DataFrame")
 
