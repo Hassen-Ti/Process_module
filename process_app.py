@@ -169,3 +169,25 @@ def heatmap_gen_Hass(df):
     button = widgets.Button(description="Generate Heatmap")
     button.on_click(on_button_click)
     display(button)
+    
+    
+    def url_df():
+    lien_url = widgets.Text(value="Insérez l'URL", description="URL")
+    mon_df = widgets.Text(value="Insérez le nom de votre DF", description="Nom DataFrame")
+
+    display(lien_url, mon_df)
+
+    def on_button_1(btn):
+        url = lien_url.value
+        df_name = mon_df.value
+        try:
+            df = pd.read_csv(url)
+            globals()[df_name] = df
+            print(f"votre DataFrame a été créé avec succès sous le nom de {df_name}")
+            pa.preprocessing(df)
+        except Exception as e:
+            print(f"Erreur lors de la lecture du fichier CSV: {e}")
+
+    bouton_1 = widgets.Button(description="Votre DF")
+    bouton_1.on_click(on_button_1)
+    display(bouton_1)
