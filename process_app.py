@@ -15,7 +15,7 @@ def visual(df):
   def on_button_boxplot(b):
       with output:
           clear_output()
-          df.plot(kind='box', subplots=True, layout=(3, 3), figsize=(12, 10))
+          df.plot(kind='box', subplots=True, layout=(3, 3), figsize=(14, 12))
           plt.show()
   
   def on_button_pairplot(b):
