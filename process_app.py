@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 import pandas as pd
+import math
 # Ma superbe application pour visualiser
 def visual(df):
   output = widgets.Output()
