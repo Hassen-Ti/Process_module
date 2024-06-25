@@ -176,14 +176,14 @@ def url_df():
     lien_url = widgets.Text(value="Insérez l'URL", description="URL")
     mon_df = widgets.Text(value="Insérez le nom de votre DF", description="Nom DataFrame")
 
-    display(lien_url, mon_df)
+    display(lien_url, mon_df, output)
 
     def on_button_1(btn):
         with output:
             clear_output()
             url = lien_url.value
             df_name = mon_df.value
-            display(url,df_name)
+            display(url, df_name)
             try:
                 df = pd.read_csv(url)
                 globals()[df_name] = df
@@ -192,6 +192,6 @@ def url_df():
             except Exception as e:
                 print(f"Erreur lors de la lecture du fichier CSV: {e}")
 
-        bouton_1 = widgets.Button(description="Votre DF")
-        bouton_1.on_click(on_button_1)
-        display(bouton_1)
+    bouton_1 = widgets.Button(description="Votre DF")
+    bouton_1.on_click(on_button_1)
+    display(bouton_1)
