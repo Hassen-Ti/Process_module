@@ -28,27 +28,21 @@ def visual(df):
           sns.pairplot(df)
           plt.show()
   
-  def on_button_missing_heatmap(b):
-      with output:
-          clear_output()
-          plt.figure(figsize=(10, 8))
-          sns.heatmap(df.isna(), cbar=False, cmap='viridis')
-          plt.title('Heatmap of Missing Values')
-          plt.show()
+
           
   button_hist = widgets.Button(description="Histogram")
   button_boxplot = widgets.Button(description="Boxplot")
   button_pairplot = widgets.Button(description="Pairplot")
-  button_missing_heatmap = widgets.Button(description="Missing Heatmap")
+
 
   button_hist.on_click(on_button_hist)
   button_boxplot.on_click(on_button_boxplot)
   button_pairplot.on_click(on_button_pairplot)
-  button_missing_heatmap.on_click(on_button_missing_heatmap)
+
 
   buttons_row1 = widgets.HBox([button_hist, button_boxplot, button_pairplot])
-  buttons_row2 = widgets.HBox([button_missing_heatmap])  
-  buttons_layout = widgets.VBox([buttons_row1, buttons_row2])
+ 
+  buttons_layout = widgets.VBox([buttons_row1])
 
   display(buttons_layout, output)
   
@@ -149,6 +143,7 @@ def heatmap_gen_Hass(df):
     display(title_widget, columns_widget, save_widget, filename_widget)
     
     def on_button_click(b):
+        
         title = title_widget.value
         columns = columns_widget.value
         save_option = save_widget.value
@@ -177,22 +172,25 @@ def heatmap_gen_Hass(df):
     
 
 def url_df():
+    output = widgets.Output()
     lien_url = widgets.Text(value="Insérez l'URL", description="URL")
     mon_df = widgets.Text(value="Insérez le nom de votre DF", description="Nom DataFrame")
 
     display(lien_url, mon_df)
 
     def on_button_1(btn):
-        url = lien_url.value
-        df_name = mon_df.value
-        try:
-            df = pd.read_csv(url)
-            globals()[df_name] = df
-            print(f"votre df a été créé avec succès sous le nom de {df_name}")
-            preprocessing(df)
-        except Exception as e:
-            print(f"Erreur lors de la lecture du fichier CSV: {e}")
+        with output:
+            clear_output()
+            url = lien_url.value
+            df_name = mon_df.value
+            try:
+                df = pd.read_csv(url)
+                globals()[df_name] = df
+                print(f"votre df a été créé avec succès sous le nom de {df_name}")
+                preprocessing(df)
+            except Exception as e:
+                print(f"Erreur lors de la lecture du fichier CSV: {e}")
 
-    bouton_1 = widgets.Button(description="Votre DF")
-    bouton_1.on_click(on_button_1)
-    display(bouton_1)
+        bouton_1 = widgets.Button(description="Votre DF")
+        bouton_1.on_click(on_button_1)
+        display(bouton_1)
