@@ -183,6 +183,7 @@ def url_df():
             clear_output()
             url = lien_url.value
             df_name = mon_df.value
+            display(url,df_name)
             try:
                 df = pd.read_csv(url)
                 globals()[df_name] = df
