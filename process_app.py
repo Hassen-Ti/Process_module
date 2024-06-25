@@ -143,7 +143,6 @@ def heatmap_gen_Hass(df):
     display(title_widget, columns_widget, save_widget, filename_widget)
     
     def on_button_click(b):
-        
         title = title_widget.value
         columns = columns_widget.value
         save_option = save_widget.value
@@ -176,21 +175,18 @@ def url_df():
     lien_url = widgets.Text(value="Insérez l'URL", description="URL")
     mon_df = widgets.Text(value="Insérez le nom de votre DF", description="Nom DataFrame")
 
-    display(lien_url, mon_df, output)
+    display(lien_url, mon_df)
 
     def on_button_1(btn):
-        with output:
-            clear_output()
-            url = lien_url.value
-            df_name = mon_df.value
-            display(url, df_name)
-            try:
-                df = pd.read_csv(url)
-                globals()[df_name] = df
-                print(f"votre df a été créé avec succès sous le nom de {df_name}")
-                preprocessing(df)
-            except Exception as e:
-                print(f"Erreur lors de la lecture du fichier CSV: {e}")
+        url = lien_url.value
+        df_name = mon_df.value
+        try:
+            df = pd.read_csv(url)
+            globals()[df_name] = df
+            print(f"votre df a été créé avec succès sous le nom de {df_name}")
+            preprocessing(df)
+        except Exception as e:
+            print(f"Erreur lors de la lecture du fichier CSV: {e}")
 
     bouton_1 = widgets.Button(description="Votre DF")
     bouton_1.on_click(on_button_1)
