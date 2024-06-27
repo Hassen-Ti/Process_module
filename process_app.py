@@ -191,3 +191,44 @@ def url_df():
     bouton_1 = widgets.Button(description="Votre DF")
     bouton_1.on_click(on_button_1)
     display(bouton_1)
+    
+    
+    
+
+def boxploute(df):
+    output = widgets.Output()
+    
+    title_widget = widgets.Text(value='Box Plot', description='Title:')
+    x_column_widget = widgets.Dropdown(options=df.columns, description='X Axis:')
+    y_column_widget = widgets.Dropdown(options=df.columns, description='Y Axis:')
+    hue_widget = widgets.Dropdown(options=[None] + list(df.columns), description='Hue:')
+    save_widget = widgets.Checkbox(value=False, description='Save Figure')
+    filename_widget = widgets.Text(value='boxplot.png', description='Filename:')
+    
+    display(title_widget, x_column_widget, y_column_widget, hue_widget, save_widget, filename_widget)
+    
+    def on_button_click(b):
+        with output:
+            clear_output()
+            title = title_widget.value
+            x_column = x_column_widget.value
+            y_column = y_column_widget.value
+            hue = hue_widget.value
+            save_option = save_widget.value
+            filename = filename_widget.value if save_option else ""
+            
+            plt.figure(figsize=(10, 8))
+            sns.boxplot(x=x_column, y=y_column, data=df, hue=hue)
+            plt.title(title)
+            plt.xlabel(x_column)
+            plt.ylabel(y_column)
+            
+            if filename:
+                plt.savefig(filename)
+                print(f"Figure sauvegardée sous le nom {filename}")
+            
+            plt.show()
+    
+    button = widgets.Button(description="Generate Box plot")
+    button.on_click(on_button_click)
+    display(button, output)
