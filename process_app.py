@@ -7,6 +7,7 @@ import math
 # Ma superbe application pour visualiser
 def visual(df):
   output = widgets.Output()
+  
   def on_button_hist(b):
       with output:
           clear_output()
@@ -16,11 +17,12 @@ def visual(df):
   def on_button_boxplot(b):
         with output:
             clear_output()
-            n_cols = df.shape[1]
-            n_rows = math.ceil(n_cols / 3)  # Ajuste le nombre de lignes en fonction du nombre de colonnes
-            df.plot(kind='box', subplots=True, layout=(n_rows, 3), figsize=(12, n_rows * 3))
-            plt.tight_layout()  # Ajout pour éviter l'overlap des plots
-            plt.show()
+            # n_cols = df.shape[1]
+            # n_rows = math.ceil(n_cols / 3)  # Ajuste le nombre de lignes en fonction du nombre de colonnes
+            # df.plot(kind='box', subplots=True, layout=(n_rows, 3), figsize=(12, n_rows * 3))
+            # plt.tight_layout()  # Ajout pour éviter l'overlap des plots
+            # plt.show()
+            boxploute(df)
   
   def on_button_pairplot(b):
       with output:
