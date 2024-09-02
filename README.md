@@ -2,9 +2,9 @@
 
 This is my first project `file.py` which groups methods and functions that can help to explore DataFrames and do visualization.
 
-# Python Code
+## Python Code
 
-## Import
+# you can copy this code, and try to use my functions ;) 
 
 ```python
 import requests
