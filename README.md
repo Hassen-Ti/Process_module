@@ -24,5 +24,12 @@ import process_app as pa
 df = pd.read_csv("path.csv")
 pa.preprocessing(df)  # finished
 pa.visual(df) # under development and fitting
-url_df() # under development
+pa.url_df() # under development
+```
+## example after importing my functions try to do 
+```
+import pandas as pd
+url = "https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"
+df = pd.read_csv(url)
+pa.preprocessing(df) # and see what it gives ;)
 ```
