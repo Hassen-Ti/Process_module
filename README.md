@@ -19,13 +19,6 @@ with open('process_app.py', 'wb') as file:
 import process_app as pa
 ```
 
-# saving temporarly
-```
-with open('process_app.py', 'wb') as file:
-    file.write(response.content)
-import process_app as pa 
-## Try my super cool application for data preprocessing
-```
 # you can try with any df 
 ```
 df = pd.read_csv("path.csv")
