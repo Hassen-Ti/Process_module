@@ -11,7 +11,7 @@ def visual(df):
   def on_button_hist(b):
       with output:
           clear_output()  
-          histogram(df)
+          histograme(df)
   
   def on_button_boxplot(b):
         with output:
