@@ -296,19 +296,24 @@ def histograme(df):
                     print(f"Column '{col}' has been factorized.")
             
             # create a histogram for each columns.
-            for col in selected_columns:
-                plt.figure(figsize=(width, height))
+            plt.figure(figsize=(width, height * len(selected_columns)))
+
+            for i, col in enumerate(selected_columns, 1):
+                plt.subplot(len(selected_columns), 1, i)  # Créez un subplot pour chaque colonne
                 df_temp[col].hist(bins=bins, color=color)
                 plt.title(f"{title} - {col}")
                 plt.xlabel(col)
                 plt.ylabel('Frequency')
-                
-                if save_option and filename:
-                    plt.savefig(f"{col}_{filename}")
-                    print(f"Figure for {col} saved as {col}_{filename}")
-                
-                plt.show()
+
+            plt.tight_layout()  # Ajuste les espacements entre les subplots
+
+            if save_option and filename:
+                plt.savefig(filename)
+                print(f"Figure saved as {filename}")
+
+            plt.show()
     
     button = widgets.Button(description="Generate Histogram")
     button.on_click(on_button_click)
     display(button, output)
+
