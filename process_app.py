@@ -260,9 +260,9 @@ def histograme(df):
     filename_widget = widgets.Text(value='histogram.png', description='Filename:')
     
     title_hbox = widgets.VBox([title_widget, columns_widget, bins_widget])
-    hue_figsize_hbox = widgets.VBox([color_widget, figsize_widget_a, figsize_widget_b])
+    color_figsize_hbox = widgets.VBox([color_widget, figsize_widget_a, figsize_widget_b])
     save_hbox = widgets.VBox([save_widget, filename_widget])
-    all_v_box = widgets.HBox([title_hbox, hue_figsize_hbox, save_hbox])
+    all_v_box = widgets.HBox([title_hbox, color_figsize_hbox, save_hbox])
     display(all_v_box)
     
     def on_button_click(b):
@@ -286,21 +286,28 @@ def histograme(df):
                 print("Please select at least one column.")
                 return
             
+            # Create a copy of the original df.
+            df_temp = df.copy()
             # Check and factorize non-numeric columns pd (pandas), api.types() is module from pandas, and it's works with pandas types (df or series)
             # is numeric_dtype it's a function that return a booelan, true if there is numeric value false if not
             for col in selected_columns:
-                if not pd.api.types.is_numeric_dtype(df[col]):
-                    df[col] = df[col].astype('category').cat.codes
+                if not pd.api.types.is_numeric_dtype(df_temp[col]):
+                    df_temp[col] = df_temp[col].astype('category').cat.codes
                     print(f"Column '{col}' has been factorized.")
-
-            df[selected_columns].hist(bins=bins, color=color, figsize=(width, height))
-            plt.suptitle(title)
             
-            if save_option and filename:
-                plt.savefig(filename)
-                print(f"Figure saved as {filename}")
-            
-            plt.show()
+            # create a histogram for each columns.
+            for col in selected_columns:
+                plt.figure(figsize=(width, height))
+                df_temp[col].hist(bins=bins, color=color)
+                plt.title(f"{title} - {col}")
+                plt.xlabel(col)
+                plt.ylabel('Frequency')
+                
+                if save_option and filename:
+                    plt.savefig(f"{col}_{filename}")
+                    print(f"Figure for {col} saved as {col}_{filename}")
+                
+                plt.show()
     
     button = widgets.Button(description="Generate Histogram")
     button.on_click(on_button_click)
