@@ -4,47 +4,8 @@ import ipywidgets as widgets
 from IPython.display import display, clear_output
 import pandas as pd
 import math
-# Ma superbe application pour visualiser
-def visual(df):
-  output = widgets.Output()
-  
-  def on_button_hist(b):
-      with output:
-          clear_output()  
-          histograme_v1(df)
-  
-  def on_button_boxplot(b):
-        with output:
-            clear_output()
-            boxplote(df)
-  
-  # def on_button_pairplot(b):
-  #     with output:
-  #         clear_output()
-  #         sns.pairplot(df)
-  #         plt.show()
-  
 
-          
-  button_hist = widgets.Button(description="Histogram")
-  button_boxplot = widgets.Button(description="Boxplot")
-  # button_pairplot = widgets.Button(description="Pairplot")
-
-
-  button_hist.on_click(on_button_hist)
-  button_boxplot.on_click(on_button_boxplot)
-  # button_pairplot.on_click(on_button_pairplot)
-
-
-  # buttons_row1 = widgets.HBox([button_hist, button_boxplot, button_pairplot])
-  buttons_row1 = widgets.HBox([button_hist, button_boxplot])
-  buttons_layout = widgets.VBox([buttons_row1])
-
-  display(buttons_layout, output)
   
-  
-  
-
 # ma superbe application pour explorer le dataframe
 def preprocessing(df):
     output = widgets.Output()
@@ -128,44 +89,7 @@ def preprocessing(df):
 
     display(buttons_layout, output)
     
-    # Mon SUPER generateur de HEATMAP *==HASSENE==*
-
-def heatmap_gen_Hass(df):
-    title_widget = widgets.Text(value='Heatmap of Correlation Matrix', description='Title:')
-    columns_widget = widgets.Text(value='', description='Columns:')
-    save_widget = widgets.Checkbox(value=False, description='Save Figure')
-    filename_widget = widgets.Text(value='heatmap.png', description='Filename:')
-    
-    display(title_widget, columns_widget, save_widget, filename_widget)
-    
-    def on_button_click(b):
-        title = title_widget.value
-        columns = columns_widget.value
-        save_option = save_widget.value
-        filename = filename_widget.value if save_option else ""
-        
-        if columns:
-            columns = [col.strip() for col in columns.split(',')]
-            correlation_matrix = df[columns].corr()
-        else:
-            correlation_matrix = df.corr()
-        
-        plt.figure(figsize=(10, 8))
-        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
-        plt.title(title)
-        
-        if filename:
-            plt.savefig(filename)
-            print(f"Figure sauvegardée sous le nom {filename}")
-        
-        plt.show()
-    
-    button = widgets.Button(description="Generate Heatmap")
-    button.on_click(on_button_click)
-    display(button)
-    
-    
-
+# under developpement 
 def url_df():
     output = widgets.Output()
     lien_url = widgets.Text(value="Insérez l'URL", description="URL")
@@ -187,8 +111,46 @@ def url_df():
     bouton_1 = widgets.Button(description="Votre DF")
     bouton_1.on_click(on_button_1)
     display(bouton_1)
-    
-    
+
+
+
+# Ma superbe fonction interactive pour visualiser
+def visual(df):
+  output = widgets.Output()
+  
+  def on_button_hist(b):
+      with output:
+          clear_output()  
+          histograme(df)
+  
+  def on_button_boxplot(b):
+        with output:
+            clear_output()
+            boxplote(df)
+  
+  # def on_button_pairplot(b):
+  #     with output:
+  #         clear_output()
+  #         sns.pairplot(df)
+  #         plt.show()
+  
+
+          
+  button_hist = widgets.Button(description="Histogram")
+  button_boxplot = widgets.Button(description="Boxplot")
+  # button_pairplot = widgets.Button(description="Pairplot")
+
+
+  button_hist.on_click(on_button_hist)
+  button_boxplot.on_click(on_button_boxplot)
+  # button_pairplot.on_click(on_button_pairplot)
+
+
+  # buttons_row1 = widgets.HBox([button_hist, button_boxplot, button_pairplot])
+  buttons_row1 = widgets.HBox([button_hist, button_boxplot])
+  buttons_layout = widgets.VBox([buttons_row1])
+
+  display(buttons_layout)    
     
 # Interactive function for boxplot
 def boxplote(df):
@@ -318,7 +280,7 @@ def histograme(df):
     display(button, output)
 
 
-# fonction historgram pour la fonction visual
+# fonction historgram pour la fonction visual ""under developpements""
 def histograme_v1(df):
     output = widgets.Output()
     
@@ -388,4 +350,41 @@ def histograme_v1(df):
     button = widgets.Button(description="Generate Histogram")
     button.on_click(on_button_click)
     display(button)
+    # Mon SUPER generateur de HEATMAP *==HASSENE==* ""under developpements""
+
+def heatmap_gen_Hass(df):
+    title_widget = widgets.Text(value='Heatmap of Correlation Matrix', description='Title:')
+    columns_widget = widgets.Text(value='', description='Columns:')
+    save_widget = widgets.Checkbox(value=False, description='Save Figure')
+    filename_widget = widgets.Text(value='heatmap.png', description='Filename:')
+    
+    display(title_widget, columns_widget, save_widget, filename_widget)
+    
+    def on_button_click(b):
+        title = title_widget.value
+        columns = columns_widget.value
+        save_option = save_widget.value
+        filename = filename_widget.value if save_option else ""
+        
+        if columns:
+            columns = [col.strip() for col in columns.split(',')]
+            correlation_matrix = df[columns].corr()
+        else:
+            correlation_matrix = df.corr()
+        
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+        plt.title(title)
+        
+        if filename:
+            plt.savefig(filename)
+            print(f"Figure sauvegardée sous le nom {filename}")
+        
+        plt.show()
+    
+    button = widgets.Button(description="Generate Heatmap")
+    button.on_click(on_button_click)
+    display(button)
+    
+    
 
