@@ -116,14 +116,20 @@ def url_df():
 
 # Ma superbe fonction interactive pour visualiser
 def visual(df):
-  output = widgets.Output()
-  
-  def on_button_hist(b):
-      with output:
-          clear_output()  
-          output = widgets.Output()
-    
-    columns_widget = widgets.SelectMultiple(options=df.columns, description='Columns:')
+    output = widgets.Output()
+
+    # List of type of plots, other graphs under developpement 
+    list_plot = ['histogram', 'boxplot']  
+
+    # Widget for select a type of plot
+    plot_type_widget = widgets.Dropdown(
+        options=list_plot,
+        description='Plot Type:',
+        value=None  # this code for non default selecltion
+    )
+
+    # Widgets for histogram
+    columns_widget = widgets.SelectMultiple(options=df.columns, description='Select Columns:')
     bins_widget = widgets.IntSlider(value=10, min=1, max=50, step=1, description='Bins:')
     color_widget = widgets.ColorPicker(value='blue', description='Color:')
     figsize_widget_a = widgets.Text(value='5', description='Width:')
@@ -131,93 +137,119 @@ def visual(df):
     title_widget = widgets.Text(value='Histogram', description='Title:')
     save_widget = widgets.Checkbox(value=False, description='Save Figure')
     filename_widget = widgets.Text(value='histogram.png', description='Filename:')
-    
-    title_hbox = widgets.VBox([title_widget, columns_widget, bins_widget])
-    color_figsize_hbox = widgets.VBox([color_widget, figsize_widget_a, figsize_widget_b])
-    save_hbox = widgets.VBox([save_widget, filename_widget])
-    all_v_box = widgets.HBox([title_hbox, color_figsize_hbox, save_hbox])
-    display(all_v_box)
-    
-    def on_button_click(b):
+
+    # Widgets for boxplot
+    box_title_widget = widgets.Text(value='Box Plot', description='Title:')
+    x_column_widget = widgets.Dropdown(options=df.columns, description='X Axis:')
+    y_column_widget = widgets.Dropdown(options=df.columns, description='Y Axis:')
+    hue_widget = widgets.Dropdown(options=[None] + list(df.columns), description='Hue:')
+    box_figsize_widget_a = widgets.Text(value='5', description='Width:')
+    box_figsize_widget_b = widgets.Text(value='5', description='Height:')
+    box_save_widget = widgets.Checkbox(value=False, description='Save Figure')
+    box_filename_widget = widgets.Text(value='boxplot.png', description='Filename:')
+
+    # Fonction executed when we select a type of graph
+    def on_plot_type_change(change):
         with output:
-            clear_output()
+            clear_output()  # Efface tout le précédent affichage avant d'afficher les nouveaux widgets
+            selected_plot = plot_type_widget.value
+
+            if selected_plot == 'histogram':
+                # display histogram's widgets
+                display(widgets.HBox([
+                    widgets.VBox([columns_widget,title_widget, filename_widget,save_widget]),
+                    widgets.VBox([figsize_widget_b,figsize_widget_a,  bins_widget, color_widget])
+                ]))
+                # generate histogram button
+                button = widgets.Button(description="Generate Histogram")
+                button.on_click(on_button_click_histogram)
+                display(button)
+            elif selected_plot == 'boxplot':
+                # display boxplot widget
+                display(widgets.HBox([
+                    widgets.VBox([box_title_widget, x_column_widget, y_column_widget]),
+                    widgets.VBox([hue_widget, box_figsize_widget_a, box_figsize_widget_b]),
+                    widgets.VBox([box_save_widget, box_filename_widget])
+                ]))
+                # generate a boxplot button
+                button = widgets.Button(description="Generate Box Plot")
+                button.on_click(on_button_click_boxplot)
+                display(button)
+
+    # Function for generate histogram when boutton is clicked
+    def on_button_click_histogram(b):
+        with output:
+            clear_output()  # clear outputs before each click
             try:
                 width = int(figsize_widget_a.value)
                 height = int(figsize_widget_b.value)
             except ValueError:
                 print("Please enter valid numbers for figsize.")
                 return
-            
+
             selected_columns = list(columns_widget.value)
             bins = bins_widget.value
             color = color_widget.value
             title = title_widget.value
             save_option = save_widget.value
             filename = filename_widget.value if save_option else ""
-            
+
             if not selected_columns:
                 print("Please select at least one column.")
                 return
-            
-            # Create a copy of the original df.
-            df_temp = df.copy()
-            # Check and factorize non-numeric columns pd (pandas), api.types() is module from pandas, and it's works with pandas types (df or series)
-            # is numeric_dtype it's a function that return a booelan, true if there is numeric value false if not
-            for col in selected_columns:
-                if not pd.api.types.is_numeric_dtype(df_temp[col]):
-                    df_temp[col] = df_temp[col].astype('category').cat.codes
-                    print(f"Column '{col}' has been factorized.")
-            
-            # create a histogram for each columns.
-            plt.figure(figsize=(width, height * len(selected_columns)))
 
+            # Generate an histogram for each columns
+            plt.figure(figsize=(width, height * len(selected_columns)))
             for i, col in enumerate(selected_columns, 1):
-                plt.subplot(len(selected_columns), 1, i)  # Créez un subplot pour chaque colonne
-                df_temp[col].hist(bins=bins, color=color)
+                plt.subplot(len(selected_columns), 1, i)
+                df[col].hist(bins=bins, color=color)
                 plt.title(f"{title} - {col}")
                 plt.xlabel(col)
                 plt.ylabel('Frequency')
 
-            plt.tight_layout()  # Ajuste les espacements entre les subplots
+            plt.tight_layout()
 
             if save_option and filename:
                 plt.savefig(filename)
                 print(f"Figure saved as {filename}")
 
             plt.show()
-    
-    button = widgets.Button(description="Generate Histogram")
-    button.on_click(on_button_click)
-    display(button, output)
-  
-  def on_button_boxplot(b):
+
+    # Function for generate boxplot when boutton is clicked
+    def on_button_click_boxplot(b):
         with output:
             clear_output()
-            boxplote(df)
-  
-  # def on_button_pairplot(b):
-  #     with output:
-  #         clear_output()
-  #         sns.pairplot(df)
-  #         plt.show()
-  
+            try:
+                width = int(box_figsize_widget_a.value)
+                height = int(box_figsize_widget_b.value)
+            except ValueError:
+                print("Please enter valid numbers for figsize.")
+                return
+            
+            title = box_title_widget.value
+            x_column = x_column_widget.value
+            y_column = y_column_widget.value
+            hue = hue_widget.value
+            save_option = box_save_widget.value
+            filename = box_filename_widget.value if save_option else ""
+            
+            plt.figure(figsize=(width, height))
+            sns.boxplot(x=x_column, y=y_column, data=df, hue=hue if hue != 'None' else None)
+            plt.title(title)
+            plt.xlabel(x_column)
+            plt.ylabel(y_column)
+            
+            if save_option and filename:
+                plt.savefig(filename)
+                print(f"Figure saved as {filename}")
+            
+            plt.show()
 
-          
-  button_hist = widgets.Button(description="Histogram")
-  button_boxplot = widgets.Button(description="Boxplot")
-  # button_pairplot = widgets.Button(description="Pairplot")
+    # the methode observe is a function which execute the selection when we change a plot automatically without restarting executing the function pa.visual()
+    plot_type_widget.observe(on_plot_type_change, names='value')
 
-
-  button_hist.on_click(on_button_hist)
-  button_boxplot.on_click(on_button_boxplot)
-  # button_pairplot.on_click(on_button_pairplot)
-
-
-  # buttons_row1 = widgets.HBox([button_hist, button_boxplot, button_pairplot])
-  buttons_row1 = widgets.HBox([button_hist, button_boxplot])
-  buttons_layout = widgets.VBox([buttons_row1])
-
-  display(buttons_layout,output)    
+    # Afficher le widget de sélection du type de graphique
+    display(plot_type_widget, output)
 # visual v2
 def visual_v2(df):
     output = widgets.Output()
