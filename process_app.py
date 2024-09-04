@@ -218,6 +218,95 @@ def visual(df):
   buttons_layout = widgets.VBox([buttons_row1])
 
   display(buttons_layout,output)    
+# visual v2
+def visual_v2(df):
+    output = widgets.Output()
+  
+    def on_button_hist(b):
+        with output:
+            clear_output()  
+            # Ne pas redéfinir output ici, utiliser celui déjà créé dans visual
+        
+            # Widgets pour histogramme
+            columns_widget = widgets.SelectMultiple(options=df.columns, description='Columns:')
+            bins_widget = widgets.IntSlider(value=10, min=1, max=50, step=1, description='Bins:')
+            color_widget = widgets.ColorPicker(value='blue', description='Color:')
+            figsize_widget_a = widgets.Text(value='5', description='Width:')
+            figsize_widget_b = widgets.Text(value='5', description='Height:')
+            title_widget = widgets.Text(value='Histogram', description='Title:')
+            save_widget = widgets.Checkbox(value=False, description='Save Figure')
+            filename_widget = widgets.Text(value='histogram.png', description='Filename:')
+            
+            title_hbox = widgets.VBox([title_widget, columns_widget, bins_widget])
+            color_figsize_hbox = widgets.VBox([color_widget, figsize_widget_a, figsize_widget_b])
+            save_hbox = widgets.VBox([save_widget, filename_widget])
+            all_v_box = widgets.HBox([title_hbox, color_figsize_hbox, save_hbox])
+            display(all_v_box)
+        
+            def on_button_click(b):
+                with output:
+                    clear_output()  # Clear previous output before displaying new content
+                    try:
+                        width = int(figsize_widget_a.value)
+                        height = int(figsize_widget_b.value)
+                    except ValueError:
+                        print("Please enter valid numbers for figsize.")
+                        return
+                    
+                    selected_columns = list(columns_widget.value)
+                    bins = bins_widget.value
+                    color = color_widget.value
+                    title = title_widget.value
+                    save_option = save_widget.value
+                    filename = filename_widget.value if save_option else ""
+                    
+                    if not selected_columns:
+                        print("Please select at least one column.")
+                        return
+                    
+                    # Create a copy of the original df
+                    df_temp = df.copy()
+                    
+                    # Factoriser les colonnes non numériques
+                    for col in selected_columns:
+                        if not pd.api.types.is_numeric_dtype(df_temp[col]):
+                            df_temp[col] = df_temp[col].astype('category').cat.codes
+                            print(f"Column '{col}' has been factorized.")
+                    
+                    plt.figure(figsize=(width, height * len(selected_columns)))
+                    
+                    for i, col in enumerate(selected_columns, 1):
+                        plt.subplot(len(selected_columns), 1, i)
+                        df_temp[col].hist(bins=bins, color=color)
+                        plt.title(f"{title} - {col}")
+                        plt.xlabel(col)
+                        plt.ylabel('Frequency')
+                    
+                    plt.tight_layout()
+
+                    if save_option and filename:
+                        plt.savefig(filename)
+                        print(f"Figure saved as {filename}")
+
+                    plt.show()
+        
+            button = widgets.Button(description="Generate Histogram")
+            button.on_click(on_button_click)
+            display(button, output)
+  
+    button_hist = widgets.Button(description="Histogram")
+    button_hist.on_click(on_button_hist)
+
+    # Layout des boutons
+    buttons_row1 = widgets.HBox([button_hist])
+    buttons_layout = widgets.VBox([buttons_row1])
+  
+    display(buttons_layout, output)
+
+
+
+
+
     
 # Interactive function for boxplot
 def boxplote(df):
