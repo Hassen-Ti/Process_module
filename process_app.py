@@ -221,7 +221,6 @@ def visual(df):
 # visual v2
 def visual_v2(df):
     output = widgets.Output()
-  
     def on_button_hist(b):
         with output:
             clear_output()  
