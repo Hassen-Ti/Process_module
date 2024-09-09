@@ -32,5 +32,6 @@ pa.MachineLearn(df) # under developemnt
 import pandas as pd
 url = "https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"
 df = pd.read_csv(url)
-pa.preprocessing(df) # and see what it gives ;)
+pa.preprocessing(df)
+pa.visual(df)          # try to use it, and see what it gives ;)
 ```
