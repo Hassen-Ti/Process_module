@@ -23,7 +23,7 @@ import process_app as pa
 ```
 df = pd.read_csv("path.csv")
 pa.preprocessing(df)  # finished
-pa.visual(df) # under development and fitting
+pa.visual(df) # can be used , under development and fitting
 pa.url_df() # under development
 pa.MachineLearn(df) # under developemnt
 ```
