@@ -573,5 +573,145 @@ def heatmap_gen_Hass(df):
     button.on_click(on_button_click)
     display(button)
     
+
+
+# Functions to replace missing values
+def fillna_mean(df, inplace=False):
+    if inplace:
+        df.fillna(df.mean(), inplace=True)
+    else:
+        return df.fillna(df.mean())
+
+def fillna_af(df, inplace=False):
+    if inplace:
+        df.fillna(method='ffill', inplace=True)
+    else:
+        return df.fillna(method='ffill')
+
+def fillna_bf(df, inplace=False):   
+    if inplace:
+        df.fillna(method='bfill', inplace=True)
+    else:
+        return df.fillna(method='bfill')
+
+def fillna_mode(df, inplace=False):
+    if inplace:
+        df.fillna(df.mode().iloc[0], inplace=True)
+    else:
+        return df.fillna(df.mode().iloc[0])
     
+# MY SUPER Function for managing missing values
+
+def missing_value_manager(df):
+    # Widget to select columns
+    columns_tooltip = widgets.Label(value="Select columns from the list")
+    # columns_tooltip = widgets.HTML(
+    # value="<span style='color: gray; font-size: 12px;'>Select columns from the list</span>"
+    # )
+    columns_widget = widgets.SelectMultiple(
+        options=df.columns,
+        description='Columns:',
+        disabled=False
+    )
+    
+    # Buttons with tooltips added
+
+
+
+
+
+    # Buttons for the different replacement methods with uniform width
+    button_mean = widgets.Button(description="Replace with Mean", icon='arrow-right', layout=widgets.Layout(width='230px', height='40px'), tooltip="Select columns first, then replace missing values with the mean.")
+    button_af = widgets.Button(description="Replace with Previous Value", layout=widgets.Layout(width='230px', height='40px'), tooltip="Select columns first, then replace missing values with the previous value.")
+    button_bf = widgets.Button(description="Replace with Next Value", layout=widgets.Layout(width='230px', height='40px'), tooltip="Select columns first, then replace missing values with the next value.")
+    button_mode = widgets.Button(description="Replace with Mode", layout=widgets.Layout(width='230px', height='40px'), tooltip="Select columns first, then replace missing values with the mode.")
+    
+    # Button to display columns with missing values
+    button_isna = widgets.Button(description="Show Missing Values", icon="search", layout=widgets.Layout(width='230px', height='40px'), tooltip="Show missing values and their percentage for each column.")
+    
+    # FloatSlider to select the percentage of NaN above which to remove columns
+    slider_taux = widgets.FloatSlider(value=50, min=0, max=100, step=1, description='NaN Rate (%)', layout=widgets.Layout(width='500px'), tooltip="Select a MAX percentage of missing values above which the columns will be deleted.")
+    
+    # Button to delete columns with NaN percentage >= the selected threshold
+    button_delete = widgets.Button(description="Delete Columns", icon='trash', layout=widgets.Layout(width='230px', height='40px'), tooltip="Delete columns with missing values based on the selected NaN percentage threshold.")
+    
+    # Widget output to display results
+    output = widgets.Output()
+    
+    # Organizing widgets in rows and columns
+    button_row1 = widgets.HBox([button_bf, button_af, button_mean, button_mode])  # Group replacement buttons in one row
+    button_row2 = widgets.HBox([button_isna, button_delete])  # Group buttons related to missing values on another row
+    
+    # Display widgets with clean and spaced layout
+    display(widgets.VBox([columns_tooltip,columns_widget, slider_taux, button_row1, button_row2, output]))
+
+    # Function to adjust the success message based on the number of columns
+    def display_success_message(operator, selected_columns):
+        if len(selected_columns) == 1:
+            print(f"{operator} has been successfully applied to the column: {selected_columns[0]}")
+        else:
+            print(f"{operator} has been successfully applied to the columns: {', '.join(selected_columns)}")
+
+    # Function to apply a replacement method and display the result
+    def apply_and_display(replacement_fn, operator):
+        selected_columns = list(columns_widget.value)
+        
+        # Check if replacement_fn is fillna_mean
+        if replacement_fn == fillna_mean:
+            # Check if all selected columns are numeric
+            if not all([pd.api.types.is_numeric_dtype(df[col]) for col in selected_columns]):
+                with output:
+                    clear_output()
+                    print("Error: Please select only numeric columns to apply the mean.")
+                return  # Stop execution if a non-numeric column is selected
+        
+        if selected_columns:
+            df[selected_columns] = replacement_fn(df[selected_columns])
+            with output:
+                clear_output()
+                display_success_message(operator, selected_columns)  # Display success message
+        else:
+            with output:
+                clear_output()
+                print("No column selected.")
+    
+    # Function to display columns with missing values
+    def show_isna(b):
+        with output:
+            clear_output()  # Clear previous output
+            missing_columns = df.columns[df.isna().sum() > 0]
+            if len(missing_columns) > 0:
+                result = df.isna().sum()  # Number of NaN per column
+                total = len(df)  # Total number of rows
+                missing_data = pd.DataFrame({
+                    'Number of NaN': result[missing_columns],
+                    'Percentage of NaN (%)': (result[missing_columns] / total) * 100
+                })
+                display(missing_data)
+            else:
+                print("No missing values in this DataFrame.")
+    
+    # Function to delete columns with a NaN percentage greater than or equal to the selected threshold
+    def delete_columns(b):
+        threshold = slider_taux.value  # Get the value from the slider
+        result = df.isna().sum()  # Number of NaN per column
+        total = len(df)  # Total number of rows
+        with output:
+            clear_output()
+            columns_to_delete = [col for col in df.columns if (result[col] / total) * 100 >= threshold]
+            if columns_to_delete:
+                for col in columns_to_delete:
+                    df.drop(columns=[col], inplace=True)
+                    print(f"Column '{col}' deleted (NaN rate >= {threshold}%)")
+            else:
+                print(f"No column with a NaN rate greater than or equal to {threshold}%")
+
+    # Associate buttons with functions with customized messages
+    button_mean.on_click(lambda b: apply_and_display(fillna_mean, "Mean"))
+    button_af.on_click(lambda b: apply_and_display(fillna_af, "Previous Value"))
+    button_bf.on_click(lambda b: apply_and_display(fillna_bf, "Next Value"))
+    button_mode.on_click(lambda b: apply_and_display(fillna_mode, "Mode"))
+    button_isna.on_click(show_isna)
+    button_delete.on_click(delete_columns)
+
 
