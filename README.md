@@ -24,6 +24,7 @@ import process_app as pa
 df = pd.read_csv("path.csv")
 pa.preprocessing(df)  # finished
 pa.visual(df) # can be used , under development and fitting
+pa.missing_value_manager(df) # can be used, under fitting
 pa.url_df() # under development
 pa.MachineLearn(df) # under developemnt
 ```
