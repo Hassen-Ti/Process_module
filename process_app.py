@@ -699,7 +699,7 @@ def fillna_mode(df, inplace=False):
     
 # MY SUPER Function for managing missing values
 
-def missing_value_manager(df):
+def missing_value_manager_previous(df):
     # Widget to select columns
     columns_tooltip = widgets.Label(value="Select columns from the list")
     # columns_tooltip = widgets.HTML(
@@ -811,4 +811,237 @@ def missing_value_manager(df):
     button_isna.on_click(show_isna)
     button_delete.on_click(delete_columns)
 
+# seconde version of the missing_value_manager() function
+def fillna_method(df, columns, method, value=None):
+    """
+    Replaces missing values in specified columns using the given method.
+    """
+    if method in ['mean', 'median', 'mode']:
+        fill_values = {}
+        for col in columns:
+            if method == 'mean':
+                fill_values[col] = df[col].mean()
+            elif method == 'median':
+                fill_values[col] = df[col].median()
+            elif method == 'mode':
+                mode_series = df[col].mode()
+                if not mode_series.empty:
+                    fill_values[col] = mode_series.iloc[0]
+                else:
+                    continue  # If mode is empty, skip filling this column
+        df.fillna(value=fill_values, inplace=True)
+    elif method == 'ffill':
+        df[columns] = df[columns].fillna(method='ffill')
+    elif method == 'bfill':
+        df[columns] = df[columns].fillna(method='bfill')
+    elif method == 'custom':
+        df[columns] = df[columns].fillna(value)
+    return df
 
+def missing_value_manager(df):
+    """
+    Interactive widget to manage missing values in a DataFrame.
+    """
+    # Copy of the original DataFrame
+    df_original = df.copy()
+    
+    # Output widget
+    output = widgets.Output()
+    
+    # Column selection widget
+    columns_widget = widgets.SelectMultiple(
+        options=df.columns.tolist(),
+        description='Columns:',
+        disabled=False
+    )
+    
+    # Replacement method selection
+    method_widget = widgets.Dropdown(
+        options=['Mean', 'Median', 'Mode', 'Forward Fill', 'Backward Fill', 'Custom Value'],
+        description='Method:',
+        disabled=False
+    )
+    
+    # Custom value input
+    custom_value_widget = widgets.Text(
+        value='',
+        description='Custom Value:',
+        disabled=False
+    )
+    
+    # Slider for NaN threshold
+    threshold_slider = widgets.FloatSlider(
+        value=50,
+        min=0,
+        max=100,
+        step=1,
+        description='NaN Threshold (%):',
+        disabled=False,
+        continuous_update=False,
+        orientation='horizontal',
+        readout=True,
+        readout_format='.0f',
+        tooltip='Select the maximum acceptable percentage of missing values; columns exceeding this will be deleted.'
+    )
+    
+    # Buttons
+    replace_button = widgets.Button(
+        description='Replace Missing Values',
+        button_style='success',
+        tooltip='Replace missing values in selected columns using the chosen method.'
+    )
+    
+    delete_columns_button = widgets.Button(
+        description='Delete Columns',
+        button_style='danger',
+        tooltip='Delete columns with missing value percentage equal to or above the threshold.'
+    )
+    
+    delete_rows_button = widgets.Button(
+        description='Delete Rows',
+        button_style='danger',
+        tooltip='Delete rows containing any missing values.'
+    )
+    
+    show_missing_button = widgets.Button(
+        description='Show Missing Data',
+        button_style='info',
+        tooltip='Display missing values per column with percentages.'
+    )
+    
+    reset_button = widgets.Button(
+        description='Reset DataFrame',
+        button_style='warning',
+        tooltip='Reset the DataFrame to its original state.'
+    )
+    
+    show_summary_button = widgets.Button(
+        description='Show Summary',
+        button_style='',
+        tooltip='Display summary statistics of the DataFrame.'
+    )
+    
+    # Function to update custom value widget visibility
+    def update_custom_value_widget(*args):
+        if method_widget.value == 'Custom Value':
+            custom_value_widget.layout.display = 'block'
+        else:
+            custom_value_widget.layout.display = 'none'
+    
+    method_widget.observe(update_custom_value_widget, 'value')
+    update_custom_value_widget()
+    
+    # Function to replace missing values
+    def replace_missing_values(b):
+        selected_columns = list(columns_widget.value)
+        method = method_widget.value.lower().replace(' ', '')
+        custom_value = custom_value_widget.value
+        with output:
+            clear_output()
+            if not selected_columns:
+                print("Please select at least one column.")
+                return
+            try:
+                if method == 'customvalue':
+                    if custom_value == '':
+                        print("Please enter a custom value.")
+                        return
+                    fill_values = {}
+                    for col in selected_columns:
+                        col_dtype = df[col].dtype
+                        if pd.api.types.is_numeric_dtype(col_dtype):
+                            try:
+                                fill_values[col] = float(custom_value)
+                            except ValueError:
+                                print(f"Error: Cannot convert custom value to numeric type for column '{col}'.")
+                                return
+                        else:
+                            fill_values[col] = custom_value
+                    df.fillna(value=fill_values, inplace=True)
+                    print(f"Missing values in {selected_columns} replaced with custom value '{custom_value}'.")
+                else:
+                    if method not in ['mean', 'median', 'mode', 'ffill', 'bfill']:
+                        print("Invalid method selected.")
+                        return
+                    # Check data types for mean and median
+                    if method in ['mean', 'median']:
+                        non_numeric_cols = [col for col in selected_columns if not pd.api.types.is_numeric_dtype(df[col])]
+                        if non_numeric_cols:
+                            print(f"Cannot apply {method} to non-numeric columns: {non_numeric_cols}")
+                            return
+                    # Call the updated fillna_method
+                    fillna_method(df, selected_columns, method)
+                    print(f"Missing values in {selected_columns} replaced using method '{method_widget.value}'.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+    
+    # Function to delete columns based on NaN threshold
+    def delete_columns(b):
+        threshold = threshold_slider.value
+        with output:
+            clear_output()
+            missing_percent = df.isnull().mean() * 100
+            columns_to_drop = missing_percent[missing_percent >= threshold].index.tolist()
+            if columns_to_drop:
+                df.drop(columns=columns_to_drop, inplace=True)
+                print(f"Columns dropped (NaN >= {threshold}%): {columns_to_drop}")
+            else:
+                print(f"No columns to drop with NaN percentage >= {threshold}%.")
+    
+    # Function to delete rows with any missing values
+    def delete_rows(b):
+        with output:
+            clear_output()
+            initial_shape = df.shape
+            df.dropna(inplace=True)
+            final_shape = df.shape
+            print(f"Rows before deletion: {initial_shape[0]}, after deletion: {final_shape[0]}")
+    
+    # Function to show missing data using df.isnull().sum()
+    def show_missing_data(b):
+        with output:
+            clear_output()
+            missing_data = df.isnull().sum()
+            total_rows = df.shape[0]
+            missing_percent = (missing_data / total_rows) * 100
+            missing_df = pd.DataFrame({
+                'Missing Values': missing_data,
+                'Percentage of NaN (%)': missing_percent.round(2)
+            })
+            if missing_data.sum() == 0:
+                print("No missing values in the DataFrame.")
+            else:
+                print("Missing values per column:")
+                display(missing_df[missing_df['Missing Values'] > 0])
+    
+    # Function to reset the DataFrame
+    def reset_dataframe(b):
+        nonlocal df
+        with output:
+            clear_output()
+            df = df_original.copy()
+            print("DataFrame has been reset to its original state.")
+    
+    # Function to show summary statistics
+    def show_summary(b):
+        with output:
+            clear_output()
+            display(df.describe(include='all'))
+    
+    # Assign functions to button clicks
+    replace_button.on_click(replace_missing_values)
+    delete_columns_button.on_click(delete_columns)
+    delete_rows_button.on_click(delete_rows)
+    show_missing_button.on_click(show_missing_data)
+    reset_button.on_click(reset_dataframe)
+    show_summary_button.on_click(show_summary)
+    
+    # Layout
+    controls = widgets.VBox([
+        widgets.HBox([columns_widget, method_widget, custom_value_widget]),
+        replace_button,
+        widgets.HBox([threshold_slider, delete_columns_button]),
+        widgets.HBox([delete_rows_button, show_missing_button, reset_button, show_summary_button]),
+    ])
+    
+    display(controls, output)
