@@ -5,89 +5,186 @@ from IPython.display import display, clear_output
 import pandas as pd
 import math
 
-  
-# ma superbe application pour explorer le dataframe
+
 def preprocessing(df):
+    """
+    Interactive widget to explore a pandas DataFrame.
+    """
+    # Output widget
     output = widgets.Output()
-    
-    def on_button_info(b):
+
+    # Widgets for column selection
+    all_columns = df.columns.tolist()
+
+    # Widget for single column selection
+    column_select_single = widgets.Dropdown(
+        options=all_columns,
+        description='Select Column:',
+        disabled=False
+    )
+
+    # Widgets for filtering data
+    filter_column = widgets.Dropdown(
+        options=all_columns,
+        description='Filter Column:',
+        disabled=False
+    )
+    filter_condition = widgets.Dropdown(
+        options=['==', '!=', '>', '<', '>=', '<=', 'contains'],
+        description='Condition:',
+        disabled=False
+    )
+    filter_value = widgets.Text(
+        value='',
+        description='Value:',
+        disabled=False
+    )
+
+    # Define button actions
+    def show_info(_):
         with output:
             clear_output()
-            df.info()
-    
-    def on_button_describe(b):
+            print(df.info())
+
+    def show_describe(_):
         with output:
             clear_output()
             display(df.describe(include='all'))
-    
-    def on_button_head(b):
+
+    def show_head(_):
         with output:
             clear_output()
             display(df.head())
-    
-    def on_button_tail(b):
+
+    def show_tail(_):
         with output:
             clear_output()
             display(df.tail())
-    
-    def on_button_shape(b):
+
+    def show_shape(_):
         with output:
             clear_output()
-            display(df.shape)
-    
-    def on_button_columns(b):
+            print(f"Shape: {df.shape}")
+
+    def show_columns(_):
         with output:
             clear_output()
-            display(df.columns)
-    
-    def on_button_nunique(b):
+            print("Columns:")
+            for col in df.columns:
+                print(col)
+
+    def show_nunique(_):
         with output:
             clear_output()
             display(df.nunique())
-    
-    def on_button_dtypes(b):
+
+    def show_dtypes(_):
         with output:
             clear_output()
             display(df.dtypes)
-    
-    def on_button_isna(b):
+
+    def show_missing_data(_):
         with output:
             clear_output()
-            display(df.isna().sum())
-    
-    def on_button_duplicate(b):
+            missing_data = df.isna().sum()
+            missing_data = missing_data[missing_data > 0]
+            if not missing_data.empty:
+                print("Missing values per column:")
+                display(missing_data)
+            else:
+                print("No missing data in the DataFrame.")
+
+    def show_duplicates(_):
         with output:
             clear_output()
-            display(df.duplicated().sum())
+            duplicates = df[df.duplicated()]
+            num_duplicates = duplicates.shape[0]
+            print(f"Number of duplicate rows: {num_duplicates}")
+            if num_duplicates > 0:
+                display(duplicates)
 
-    button_info = widgets.Button(description="Info")
-    button_describe = widgets.Button(description="Describe")
-    button_head = widgets.Button(description="Head (5 rows)")
-    button_tail = widgets.Button(description="Tail (5 rows)")
-    button_shape = widgets.Button(description="Shape")
-    button_columns = widgets.Button(description="Columns")
-    button_nunique = widgets.Button(description="Nunique")
-    button_dtypes = widgets.Button(description="Dtypes")
-    button_isna = widgets.Button(description="Isna")
-    button_duplicate = widgets.Button(description="Duplicated")
+    def show_value_counts(_):
+        with output:
+            clear_output()
+            col = column_select_single.value
+            if col:
+                display(df[col].value_counts())
+            else:
+                print("Please select a column.")
 
-    button_info.on_click(on_button_info)
-    button_describe.on_click(on_button_describe)
-    button_head.on_click(on_button_head)
-    button_tail.on_click(on_button_tail)
-    button_shape.on_click(on_button_shape)
-    button_columns.on_click(on_button_columns)
-    button_nunique.on_click(on_button_nunique)
-    button_dtypes.on_click(on_button_dtypes)
-    button_isna.on_click(on_button_isna)
-    button_duplicate.on_click(on_button_duplicate)
+    def filter_data(_):
+        with output:
+            clear_output()
+            col = filter_column.value
+            cond = filter_condition.value
+            val = filter_value.value
+            try:
+                if col:
+                    col_dtype = df[col].dtype
 
-    
-    buttons_row1 = widgets.HBox([button_info, button_describe, button_head, button_tail, button_dtypes])
-    buttons_row2 = widgets.HBox([button_shape, button_columns, button_nunique, button_duplicate, button_isna])
-    buttons_layout = widgets.VBox([buttons_row1, buttons_row2])
+                    # Handle 'contains' separately
+                    if cond == 'contains':
+                        if pd.api.types.is_string_dtype(col_dtype):
+                            filtered_df = df[df[col].str.contains(val, na=False)]
+                            display(filtered_df)
+                        else:
+                            print(f"The 'contains' condition is only applicable to string columns. '{col}' is of type {col_dtype}.")
+                    else:
+                        # Convert val to appropriate data type
+                        if pd.api.types.is_numeric_dtype(col_dtype):
+                            val_converted = float(val)
+                        elif pd.api.types.is_datetime64_any_dtype(col_dtype):
+                            val_converted = pd.to_datetime(val)
+                        else:
+                            val_converted = val  # Keep as string for object columns
 
-    display(buttons_layout, output)
+                        # Use @val_converted to pass the value into the query
+                        filtered_df = df.query("`{}` {} @val_converted".format(col, cond))
+                        display(filtered_df)
+                else:
+                    print("Please select a column for filtering.")
+            except ValueError:
+                print(f"Invalid value for the data type of column '{col}'. Please enter a value of type {col_dtype}.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+    # Create buttons with styles
+    button_info = widgets.Button(description="Info", button_style='info')
+    button_describe = widgets.Button(description="Describe", button_style='info')
+    button_head = widgets.Button(description="Head", button_style='info')
+    button_tail = widgets.Button(description="Tail", button_style='info')
+    button_shape = widgets.Button(description="Shape", button_style='info')
+    button_columns = widgets.Button(description="Columns", button_style='info')
+    button_nunique = widgets.Button(description="Nunique", button_style='info')
+    button_dtypes = widgets.Button(description="Dtypes", button_style='info')
+    button_missing_data = widgets.Button(description="Missing Data", button_style='warning')
+    button_duplicates = widgets.Button(description="Duplicates", button_style='warning')
+    button_value_counts = widgets.Button(description="Value Counts", button_style='primary')
+    button_filter_data = widgets.Button(description="Filter Data", button_style='success')
+
+    # Assign button click events
+    button_info.on_click(show_info)
+    button_describe.on_click(show_describe)
+    button_head.on_click(show_head)
+    button_tail.on_click(show_tail)
+    button_shape.on_click(show_shape)
+    button_columns.on_click(show_columns)
+    button_nunique.on_click(show_nunique)
+    button_dtypes.on_click(show_dtypes)
+    button_missing_data.on_click(show_missing_data)
+    button_duplicates.on_click(show_duplicates)
+    button_value_counts.on_click(show_value_counts)
+    button_filter_data.on_click(filter_data)
+
+    # Layout the widgets
+    row1 = widgets.HBox([button_info, button_describe, button_head, button_tail, button_shape])
+    row2 = widgets.HBox([button_columns, button_nunique, button_dtypes, button_missing_data, button_duplicates])
+    row3 = widgets.HBox([button_value_counts, column_select_single])
+    row4 = widgets.HBox([button_filter_data, filter_column, filter_condition, filter_value])
+
+    # Display the interface
+    display(widgets.VBox([row1, row2, row3, row4]), output)
+
     
 # under developpement 
 def url_df():
